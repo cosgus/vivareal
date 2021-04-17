@@ -37,6 +37,8 @@ def scrape_viva(bairro):
     r = requests.get(url, headers=header)
     # print(r.text)
     while 'Access denied' in r.text:
+        print(r.headers)
+        sys.exit()
         print('trying new header')
         #print(r.text)
         header.update({'user-agent': ua.random})
