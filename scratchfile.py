@@ -11,6 +11,38 @@ import statsmodels.api as sm
 import sys
 
 
+def create_proxies_csv():
+    url = 'https://www.sslproxies.org/'
+    r = requests.get(url)
+    soup = BeautifulSoup(r.text, features='html.parser')
+    table = soup.find(id='proxylisttable')
+    proxies = table.find_all('tr')
+
+    proxy_list = []
+
+    for proxy in proxies:
+        proxy_row = proxy.find_all('td')
+
+        if len(proxy_row) > 0:
+            proxy_list.append(proxy_row[0].text + ':' + proxy_row[1].text)
+
+    df = pd.DataFrame(columns=['proxies'], data=proxy_list)
+
+    df.to_csv('proxies.csv')
+
+
+def random_proxy():
+
+    df = pd.read_csv('proxies.csv', index_col=0)
+    n = randint(0, len(df)-1)
+    proxy = df.iloc[n]
+    proxy = {
+        'http': proxy.tolist()[0],
+        'https': proxy.tolist()[0]
+    }
+    return proxy
+
+
 def scrape_viva(bairro):
 
     header = {
@@ -37,14 +69,12 @@ def scrape_viva(bairro):
     r = requests.get(url, headers=header)
     # print(r.text)
     while 'Access denied' in r.text:
-        print(r.headers)
-        sys.exit()
+
         print('trying new header')
-        #print(r.text)
         header.update({'user-agent': ua.random})
         header.update({'referer': referer_list[randint(0, len(referer_list)-1)]})
         sleep(randint(3, 7))
-        r = requests.get(url, headers=header)
+        r = requests.get(url, headers=header, proxies=random_proxy())
 
     soup = BeautifulSoup(r.text, features='lxml')
     soup = soup.find('strong', {'class': 'results-summary__count'})
