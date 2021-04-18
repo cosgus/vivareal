@@ -333,7 +333,7 @@ def main():
     bairros = ['anchieta', 'buritis', 'gutierrez', 'mangabeiras', 'lourdes']
 
     dir_check(bairros)
-
+    create_proxies_csv()
     for bairro in bairros:
         scrape_viva(bairro)
         process_data(bairro)
